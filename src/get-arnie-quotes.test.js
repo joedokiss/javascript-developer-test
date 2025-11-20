@@ -92,3 +92,24 @@ test('httpGet is called once for a valid URL', async () => {
 
   expect(httpGet).toHaveBeenCalledTimes(1);
 });
+
+test('returns FAILURE with "Invalid response body" when JSON parsing fails', async () => {
+  jest.resetModules();
+
+  jest.doMock('./mock-http-interface', () => ({
+    httpGet: jest.fn().mockResolvedValue({
+      status: 500,
+      body: '{ invalid json here '
+    })
+  }));
+
+  const { getArnieQuotes } = require('./get-arnie-quotes');
+
+  const results = await getArnieQuotes([
+    'http://www.smokeballdev.com/badjson'
+  ]);
+
+  expect(results[0]).toEqual({
+    FAILURE: 'Invalid response body'
+  });
+});
